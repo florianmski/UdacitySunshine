@@ -22,6 +22,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -30,15 +31,19 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class ForecastFragment extends Fragment {
-    private static final List<String> FAKE_DATA = Arrays.asList(
-            "Today - Sunny 88/63",
-            "Tomorrow - Foggy - 70/46",
-            "Weds - Cloudy - 72/63",
-            "Thurs - Rainy - 64/51",
-            "Fry - Foggy - 70/46",
-            "Sat - Sunny - 76/68",
-            "Sun - Rainbowy - 77/66"
+    private static final List<String> FAKE_DATA = new ArrayList<>(
+            Arrays.asList(
+                    "Today - Sunny 88/63",
+                    "Tomorrow - Foggy - 70/46",
+                    "Weds - Cloudy - 72/63",
+                    "Thurs - Rainy - 64/51",
+                    "Fry - Foggy - 70/46",
+                    "Sat - Sunny - 76/68",
+                    "Sun - Rainbowy - 77/66"
+            )
     );
+
+    private ArrayAdapter<String> adapter;
 
     public ForecastFragment() {
     }
@@ -55,7 +60,8 @@ public class ForecastFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
         ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
-        listView.setAdapter(createAdapter());
+        adapter = createAdapter();
+        listView.setAdapter(adapter);
 
         return rootView;
     }
@@ -174,9 +180,22 @@ public class ForecastFragment extends Fragment {
             return null;
         }
 
+        @Override
+        protected void onPostExecute(String[] result) {
+            super.onPostExecute(result);
+
+            if (result == null) {
+                return;
+            }
+            adapter.clear();
+            for (String dayForecast : result) {
+                adapter.add(dayForecast);
+            }
+        }
+
         /* The date/time conversion code is going to be moved outside the asynctask later,
-        * so for convenience we're breaking it out into its own method now.
-        */
+                * so for convenience we're breaking it out into its own method now.
+                */
         private String getReadableDateString(long time) {
             // Because the API returns a unix timestamp (measured in seconds),
             // it must be converted to milliseconds in order to be converted to valid date.
@@ -199,7 +218,7 @@ public class ForecastFragment extends Fragment {
         /**
          * Take the String representing the complete forecast in JSON Format and
          * pull out the data we need to construct the Strings needed for the wireframes.
-         * <p>
+         * <p/>
          * Fortunately parsing is easy:  constructor takes the JSON string and converts it
          * into an Object hierarchy for us.
          */
