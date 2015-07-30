@@ -1,9 +1,11 @@
 package com.example.android.sunshine.app;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.text.format.Time;
 import android.util.Log;
@@ -25,26 +27,12 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class ForecastFragment extends Fragment {
-    private static final List<String> FAKE_DATA = new ArrayList<>(
-            Arrays.asList(
-                    "Today - Sunny 88/63",
-                    "Tomorrow - Foggy - 70/46",
-                    "Weds - Cloudy - 72/63",
-                    "Thurs - Rainy - 64/51",
-                    "Fry - Foggy - 70/46",
-                    "Sat - Sunny - 76/68",
-                    "Sun - Rainbowy - 77/66"
-            )
-    );
-
     private ArrayAdapter<String> adapter;
 
     public ForecastFragment() {
@@ -82,8 +70,14 @@ public class ForecastFragment extends Fragment {
                 getActivity(),
                 R.layout.list_item_forecast,
                 R.id.list_item_forecast_text_view,
-                FAKE_DATA
+                new ArrayList<String>()
         );
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        updateWeather();
     }
 
     @Override
@@ -95,10 +89,18 @@ public class ForecastFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_refresh) {
-            new FetchWeatherTask().execute("paris");
+            updateWeather();
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void updateWeather() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String locationKey = getString(R.string.pref_location_key);
+        String locationDefault = getString(R.string.pref_location_default);
+        String location = preferences.getString(locationKey, locationDefault);
+        new FetchWeatherTask().execute(location);
     }
 
     public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
