@@ -12,8 +12,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -29,6 +31,8 @@ import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import static android.widget.Toast.LENGTH_SHORT;
 
 public class ForecastFragment extends Fragment {
     private static final List<String> FAKE_DATA = new ArrayList<>(
@@ -57,12 +61,19 @@ public class ForecastFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-
-        ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         adapter = createAdapter();
+        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         listView.setAdapter(adapter);
-
+        listView.setOnItemClickListener(
+                new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                        String forecast = adapter.getItem(position);
+                        Toast.makeText(getActivity(), forecast, LENGTH_SHORT).show();
+                    }
+                }
+        );
         return rootView;
     }
 
