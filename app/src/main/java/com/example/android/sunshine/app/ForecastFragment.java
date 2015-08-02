@@ -69,6 +69,12 @@ public class ForecastFragment extends Fragment implements LoaderCallbacks<Cursor
         super.onActivityCreated(savedInstanceState);
     }
 
+    // since we read the location when we create the loader, all we need to do is restart things
+    void onLocationChanged() {
+        updateWeather();
+        getLoaderManager().restartLoader(FORECAST_LOADER_ID, null, this);
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -98,12 +104,6 @@ public class ForecastFragment extends Fragment implements LoaderCallbacks<Cursor
 
         );
         return rootView;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        updateWeather();
     }
 
     @Override

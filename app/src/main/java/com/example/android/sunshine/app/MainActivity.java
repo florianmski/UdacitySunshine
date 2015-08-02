@@ -8,6 +8,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 public class MainActivity extends ActionBarActivity {
+    private final static String FRAGMENT_TAG = "forecast_fragment";
+    private String location;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -15,7 +17,7 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new ForecastFragment())
+                    .add(R.id.container, new ForecastFragment(), FRAGMENT_TAG)
                     .commit();
         }
     }
@@ -58,6 +60,20 @@ public class MainActivity extends ActionBarActivity {
         return Uri.parse("geo:0,0?").buildUpon()
                 .appendQueryParameter("q", location)
                 .build();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        String location = Utility.getPreferredLocation(this);
+        // update the location in our second pane using the fragment manager
+        if (location != null && !location.equals(this.location)) {
+            ForecastFragment ff = (ForecastFragment) getSupportFragmentManager().findFragmentByTag(FRAGMENT_TAG);
+            if (null != ff) {
+                ff.onLocationChanged();
+            }
+            this.location = location;
+        }
     }
 
 }
