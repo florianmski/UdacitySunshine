@@ -7,7 +7,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity implements ForecastFragment.Callback {
     private final static String FRAGMENT_TAG = "detail_fragment";
     private String location;
     private boolean twoPane;
@@ -79,7 +79,30 @@ public class MainActivity extends ActionBarActivity {
             if (null != ff) {
                 ff.onLocationChanged();
             }
+            DetailFragment df = (DetailFragment) getSupportFragmentManager().findFragmentByTag(FRAGMENT_TAG);
+            if (null != df) {
+                df.onLocationChanged(location);
+            }
             this.location = location;
+        }
+    }
+
+    @Override
+    public void onItemSelected(Uri contentUri) {
+        if (twoPane) {
+            Bundle args = new Bundle();
+            args.putParcelable(DetailFragment.DETAIL_URI, contentUri);
+
+            DetailFragment fragment = new DetailFragment();
+            fragment.setArguments(args);
+
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.weather_detail_container, fragment, FRAGMENT_TAG)
+                    .commit();
+        } else {
+            Intent intent = new Intent(this, DetailActivity.class)
+                    .setData(contentUri);
+            startActivity(intent);
         }
     }
 
