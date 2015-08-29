@@ -19,6 +19,7 @@ import android.widget.ListView;
 import com.example.android.sunshine.app.data.WeatherContract;
 
 public class ForecastFragment extends Fragment implements LoaderCallbacks<Cursor> {
+    private static final String SELECTED_KEY = "selected_position";
     private final static int FORECAST_LOADER_ID = 42;
 
     private static final String[] FORECAST_COLUMNS = {
@@ -53,6 +54,9 @@ public class ForecastFragment extends Fragment implements LoaderCallbacks<Cursor
 
     private ForecastAdapter adapter;
 
+    private ListView listView;
+    private int position = ListView.INVALID_POSITION;
+
     public interface Callback {
         public void onItemSelected(Uri dateUri);
     }
@@ -83,7 +87,7 @@ public class ForecastFragment extends Fragment implements LoaderCallbacks<Cursor
                              Bundle savedInstanceState) {
         adapter = new ForecastAdapter(getActivity(), null, 0);
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-        ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
+        listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(
                 new AdapterView.OnItemClickListener() {
@@ -100,10 +104,15 @@ public class ForecastFragment extends Fragment implements LoaderCallbacks<Cursor
                                     )
                             );
                         }
+                        ForecastFragment.this.position = position;
                     }
                 }
-
         );
+
+        if (savedInstanceState != null && savedInstanceState.containsKey(SELECTED_KEY)) {
+            position = savedInstanceState.getInt(SELECTED_KEY);
+        }
+
         return rootView;
     }
 
@@ -128,25 +137,38 @@ public class ForecastFragment extends Fragment implements LoaderCallbacks<Cursor
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        if (position != ListView.INVALID_POSITION) {
+            outState.putInt(SELECTED_KEY, position);
+        }
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        Uri uri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(
-                Utility.getPreferredLocation(getActivity()),
-                System.currentTimeMillis()
+        String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
+
+        String locationSetting = Utility.getPreferredLocation(getActivity());
+        Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(
+                locationSetting, System.currentTimeMillis()
         );
 
         return new CursorLoader(
                 getActivity(),
-                uri,
+                weatherForLocationUri,
                 FORECAST_COLUMNS,
                 null,
                 null,
-                WeatherContract.WeatherEntry.COLUMN_DATE + " DESC"
+                sortOrder
         );
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        adapter.swapCursor(cursor);
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        adapter.swapCursor(data);
+        if (position != ListView.INVALID_POSITION) {
+            listView.smoothScrollToPosition(position);
+        }
     }
 
     @Override
