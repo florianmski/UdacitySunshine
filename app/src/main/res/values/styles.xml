@@ -11,6 +11,8 @@
     <item name="actionBarStyle">@style/ActionBar.Solid.Sunshine.NoTitle</item>
   </style>
 
+  <style name="SettingsTheme" parent="AppTheme" />
+
   <style name="ActionBar.Solid.Sunshine.NoTitle"
     parent="@style/Widget.AppCompat.Light.ActionBar.Solid.Inverse">
     <item name="displayOptions">useLogo|showHome</item>
@@ -18,6 +20,6 @@
   </style>
 
   <style name="ForecastListStyle" />
-  
+
 </resources>
 
