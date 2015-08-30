@@ -56,6 +56,7 @@ public class ForecastFragment extends Fragment implements LoaderCallbacks<Cursor
 
     private ListView listView;
     private int position = ListView.INVALID_POSITION;
+    private boolean useTodayLayout;
 
     public interface Callback {
         public void onItemSelected(Uri dateUri);
@@ -112,6 +113,7 @@ public class ForecastFragment extends Fragment implements LoaderCallbacks<Cursor
         if (savedInstanceState != null && savedInstanceState.containsKey(SELECTED_KEY)) {
             position = savedInstanceState.getInt(SELECTED_KEY);
         }
+        adapter.setUseTodayLayout(useTodayLayout);
 
         return rootView;
     }
@@ -174,5 +176,12 @@ public class ForecastFragment extends Fragment implements LoaderCallbacks<Cursor
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         adapter.swapCursor(null);
+    }
+
+    public void setUseTodayLayout(boolean useTodayLayout) {
+        this.useTodayLayout = useTodayLayout;
+        if (adapter != null) {
+            adapter.setUseTodayLayout(this.useTodayLayout);
+        }
     }
 }
